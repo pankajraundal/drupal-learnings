@@ -1,0 +1,10 @@
+Drupal follows PSR - 4 Coding standards.
+Drupal 8 implements the PSR-4 standard and makes use of it to discover code, and to load the code on an as-needed basis 
+rather requiring every single file in Drupal's code base to be loaded for every request.
+
+AUTOLOAD:
+PSR-4 is telling you how to create your file paths so that classes can be autoloaded.
+This allow to create object without knowing the location of class file or its path.
+
+OOP Example:
+https://www.drupal.org/project/oop_examples
