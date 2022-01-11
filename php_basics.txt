@@ -2,3 +2,19 @@ PHP Hypertext Preprocessor, is one of the oldest language and very huge impact o
 Drupal is developed in the Symfony framework which is based on PHP language.
 
 This file is created to unerstand the basic concepts of PHP which we need to understand for drupal and to get it's core concepts
+
+Function:
+Are machines which do work and written a value.
+
+Array's
+Are conainer that can hold anything
+
+PHP Setup:
+We can use apache as webserver or PHP as webserve since 5.4 PHP comes with webserver which help to execute the project via command line
+To start the PHP webserve in your directory, 
+1. Go to command line
+2. CD to your directory 
+3. Run Command "php -S localhost:8000"
+4. Webserver will get started and you can access your site from "localhost:8000" url
+
+
