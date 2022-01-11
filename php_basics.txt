@@ -1,0 +1,4 @@
+PHP Hypertext Preprocessor, is one of the oldest language and very huge impact on web developement,there are many Frameworks available in PHP
+Drupal is developed in the Symfony framework which is based on PHP language.
+
+This file is created to unerstand the basic concepts of PHP which we need to understand for drupal and to get it's core concepts
