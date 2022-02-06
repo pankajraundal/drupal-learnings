@@ -1,0 +1,5 @@
+name: 'Taxonomy Terms Import With Fields'
+type: module
+description: 'This module will import terms from csv for perticular vocabulary.'
+core_version_requirement: ^8 | ^9
+package: 'Custom'

@@ -1,0 +1,7 @@
+taxonomy_terms_import_with_field.import_term_form:
+  path: '/taxonomy_terms_import_with_field/import-terms-form'
+  defaults:
+    _form:  '\Drupal\taxonomy_terms_import_with_field\Form\ImportTermsForm'
+    _title: 'Import terms of vocabulary with custom fields'
+  requirements:
+    _permission: 'access content'
