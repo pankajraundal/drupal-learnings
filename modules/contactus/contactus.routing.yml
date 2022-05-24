@@ -1,0 +1,8 @@
+author_right_block.contact_us_form:
+  path: /contact-us
+  defaults:
+    _form: '\Drupal\contactus\Form\ContactUsForm'
+    _title: "Contact us"
+  requirements:
+    _permission: "access content"
+
