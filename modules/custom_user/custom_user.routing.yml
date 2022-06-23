@@ -1,0 +1,8 @@
+sbx_contactus.sbxcontact_us_form:
+  path: "/add-custom-user"
+  defaults:
+    _form: '\Drupal\custom_user\Form\CustomUserAddForm'
+    _title: "Add custom user"
+  requirements:
+    _permission: "access content"
+

@@ -1,0 +1,66 @@
+<?php
+/**
+ * implement hook_schema()
+ */
+function custom_user_schema() {
+
+  $schema['custom_user'] = array(
+    'description' => 'Store users',
+    'fields' => array(
+      'cuid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => t('Primary Key: Unique user ID.'),
+      ),
+      'first_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('First name of the user.'),
+      ),
+      'last_name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Last name of the user.'),
+      ),
+      'age' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => t('The age of the user in years.'),
+      ),
+      'mobile_number' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => t('Mobile number of the user.'),
+      ),
+      'birth_date' => array(
+        'type' => 'varchar',
+        'mysql_type' => 'datetime',
+        'length' => 255,
+        'not null' => FALSE,
+        'description' => t('The birth date of user'),
+      ),
+    ),
+    'primary key' => array('cuid'),
+    'indexes' => array(
+      'first_name' => array('first_name'),
+      'age' => array('age'),
+    ),
+  );
+  return $schema;
+}
+
+
+/**
+ *  Implements hook_uninstall().
+ */
+function custom_user_uninstall() {
+    Drupal\Core\Database\Database::getConnection()->schema()->dropTable('custom_user');
+}

@@ -1,0 +1,6 @@
+adduser_lib:
+  js: 
+    js/custom_user.js: {}
+  dependencies: 
+    - core/jquery.once
+    - jquery_ui_datepicker/datepicker
