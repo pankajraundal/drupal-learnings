@@ -1,15 +1,16 @@
-Modules create users and and store in custom table.
+This module helps to create Custom table for user data.
+This module collect user data via form
 
 How custom table has been created
 --------------------------------
 
-Add hook_schema in the .install file of this module
-Add all fields in the schema custom_user as table name
+Added hook_schema in the .install file of this module
+Added arequiredll fields in the schema custom_user as table name
 
 How table get created
 ---------------------------
 
-Whenever module get installed hook_schema hook runs and create a table
+Whenever module get enabled 'hook_schema' hook runs and create a table
 
 What if uninstall the module
 ---------------------------
