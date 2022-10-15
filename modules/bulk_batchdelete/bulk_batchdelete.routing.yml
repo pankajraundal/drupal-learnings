@@ -1,0 +1,7 @@
+bulk_batchdelete.form:
+  path: 'bulk/delete'
+  defaults:
+    _form: '\Drupal\bulk_batchdelete\Form\BatchCreationForm'
+    _title: 'Bulk content deletion via batch processing'
+  requirements:
+    _permission: 'access content'

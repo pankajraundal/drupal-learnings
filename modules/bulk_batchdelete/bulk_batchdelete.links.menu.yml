@@ -1,0 +1,7 @@
+# Define default links for this module.
+bulk_batchdelete.form:
+  title: Content Deletion Batch API 
+  description: Create batch to delete content in bulk.
+  route_name: bulk_batchdelete.form
+  parent: system.admin_config_system
+  weight: 99

@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * @file
+ * Install functions for the bulk_delete module.
+ */
+use Drupal\Core\StreamWrapper\PublicStream;
+/**
+ * Implements hook_install().
+ */
+
+function bulk_batchdelete_install(): void {
+  $path = DRUPAL_ROOT . '/' . PublicStream::basePath() . '/bulk_delete/';
+  $fileSystem = \Drupal::service('file_system');
+  \Drupal::logger('bulk_batchdelete')->notice('Installed hook run successfully');
+  // Set up the logging directory.
+  if ($fileSystem->prepareDirectory($path, $fileSystem::CREATE_DIRECTORY)) {
+    \Drupal::messenger()->addMessage(t('The bulk_delete/ directory created.'));
+    \Drupal::logger('bulk_userdelete')->notice('Directory bulk_delete/ created.');
+
+  }
+  else {
+    \Drupal::logger('bulk_userdelete')->notice('Failed to create directory');
+    \Drupal::messenger()->addError(t('The logs/ directory could not be created, or is not writable. File logging is disabled.'));
+  }
+}

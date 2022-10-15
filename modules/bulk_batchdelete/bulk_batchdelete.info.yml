@@ -1,0 +1,5 @@
+name: Bulk delete content
+type: module
+description: Create batch to delete content in bulk.
+package: Custom
+core_version_requirement: ^8.7.7 || ^9

@@ -1,0 +1,9 @@
+services:
+  process_entity:
+    class: Drupal\bulk_batchdelete\Service\ProcessEntity
+    arguments: ['@entity_type.manager']
+  batch_service:
+    class: Drupal\bulk_batchdelete\Service\BatchService
+
+
+

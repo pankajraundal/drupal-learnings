@@ -1,0 +1,6 @@
+services:
+  bulk_batchdelete.commands:
+    class: '\Drupal\bulk_batchdelete\Commands\BulkUserDeleteCommands'
+    tags:
+      - { name: drush.command }
+    arguments: ['@entity_type.manager', '@logger.factory']
