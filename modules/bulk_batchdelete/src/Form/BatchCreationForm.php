@@ -102,6 +102,7 @@ class BatchCreationForm extends FormBase {
       '#attributes' => ["id" => "bundle_options"],
     ];
 
+    // Filed to give option for user status.
     $userStatus = $this->processEntity->getListOfUserStatus();
     $form['user_status'] = [
       '#type' => 'select',
@@ -119,6 +120,7 @@ class BatchCreationForm extends FormBase {
     
     ];
 
+    // Field to give option for user cancellation method.
     $userCancellationMethod = $this->processEntity->getListOfCancelMethod();
     $form['use_cancellation_method'] = [
       '#type' => 'radios',
@@ -135,39 +137,47 @@ class BatchCreationForm extends FormBase {
     
     ];
 
-    $form['entity'] = [
+    // Field which collect total number of records which needs to delete.
+    $form['number_of_records'] = [
       '#type' => 'number',
-      '#title' => 'Add number of records to delete',
-      '#maxlength' => 10,
+      '#title' => 'Number of records',
+      '#description' => $this->t('Add number of records which need to process.'),
+      '#maxlength' => 7,
       '#min' => 1,
-      '#required' => TRUE,
+      '#attributes' => array(
+        ' type' => 'number', // insert space before attribute name :)
+      ),
     ];
 
+    // Field which collect btach size in which records needs to delete.
     $form['batch_size'] = [
       '#type' => 'number',
       '#title' => 'Delet users in batch size',
-      '#maxlength' => 5,
+      '#description' => $this->t('Add number for batch size which needs to process at a time.'),
+      '#maxlength' => 3,
       '#min' => 1,
-      '#required' => TRUE,
     ];
 
+    // Field which collect some unique name for batch.
+    // This will helpfull for logging and identification purpose.
     $form['batch_name'] = [
       '#type' => 'textfield',
       '#title' => 'Name the batch',
       '#maxlength' => 50,
       '#description' => 'Please keep unique name for each batch, eg aug24_b1_1000
       it will create log file for same,
-      aug24(month and day), b1 (today batch number), count',
-      '#required' => TRUE,
+      aug24 - (month and day), b1 - (today batch number), number_of_records',
+      '#attributes' => array(
+        'alt' => 'Aug24_b1_100', // insert space before attribute name :)
+      ),
     ];
 
+    // Submit button.
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => 'Start Deletion',
     ];
-
     return $form;
-
   }
 
   /**
@@ -203,10 +213,66 @@ class BatchCreationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Entity field validation.
+    $entityName = $form_state->getValue('entity_list');
+    if (empty($entityName)) {
+      $form_state->setErrorByName('entity_list', $this->t('Please select entity to delete.'));
+    }
+    // Bundle field validation.
+    $bundleName = $form_state->getValue('node_type_list');
+    if (empty($bundleName)) {
+      $form_state->setErrorByName('node_type_list', $this->t('Please select bundle to delete.'));
+    }
+    // Validate extra fields which will get add if user entity has been selected.
+    if (!empty($entityName)) {
+      // User status selection.
+      $userStatus = $form_state->getValue('user_status');
+      if (empty($userStatus)) {
+        $form_state->setErrorByName('user_status', $this->t('Please select user status to delete.'));
+      }
+      // User cancellation method.
+      $userCancellationMethod = $form_state->getValue('use_cancellation_method');
+      if (empty($userCancellationMethod)) {
+        $form_state->setErrorByName('use_cancellation_method', $this->t('Please select user status to delete.'));
+      }
+    }
+    // Validation for number of records.
+    $numberOfRecords = $form_state->getValue('number_of_records');
+    if (empty($numberOfRecords)) {
+      $form_state->setErrorByName('number_of_records', $this->t('Please enter number of records which needs to delete.'));
+    }
+    // Number of records should only contains numbers.
+    if (!empty($numberOfRecords)) {
+      if (!is_numeric($numberOfRecords)) {
+        $form_state->setErrorByName('number_of_records', $this->t('Please enter only integer value for number of records.'));
+      }
+    }
+    // Validation for batch size.
+    $batchSize = $form_state->getValue('batch_size');
+    if (empty($batchSize)) {
+      $form_state->setErrorByName('batch_size', $this->t('Please enter batch size in which records needs to delete.'));
+    }
+    // Batch size should only contains numbers.
+    if (!empty($batchSize)) {
+      if (!is_numeric($batchSize)) {
+        $form_state->setErrorByName('batch_size', $this->t('Please enter only integer value for batch size.'));
+      }
+    }
+    // Batch name validation.
+    $entityName = $form_state->getValue('batch_name');
+    if (empty($entityName)) {
+      $form_state->setErrorByName('batch_name', $this->t('Please enter batch name.'));
+    }
+
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-   
     // Number of records need to delete.
-    $number_of_records = $form_state->getValues()['number_of_users'];
+    $number_of_records = $form_state->getValues()['number_of_records'];
     // Batch size.
     $batch_size = $form_state->getValues()['batch_size'];
     // Batch name.
