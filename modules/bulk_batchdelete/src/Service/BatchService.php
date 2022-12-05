@@ -3,10 +3,13 @@ namespace Drupal\bulk_batchdelete\Service;
 
 use Drupal\user\Entity\User;
 use Drupal\Core\StreamWrapper\PublicStream;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 /**
  * Class BatchService.
  */
 class BatchService {
+
+  use StringTranslationTrait;
 /**
  * File to process bulk delete operations.
  *
@@ -28,19 +31,15 @@ class BatchService {
  *   Create batches of small size which needs to process at a time.
  * @param object $batch_name
  *   Give name to the batch for logging and identification purpose.
+ * @param Array $ids
+ *   Collection of values which needs to process the batch.
  */
-public function generateBatch(string $number_of_records, string $batch_size, string $batch_name) {
+public function generateBatch(string $batch_size, string $batch_name, array $ids) {
 
   // Get all user id on the basis of role.
   // And number of records needs to delete.
-  $ids = \Drupal::entityQuery('user')
-    ->condition('status', 0)
-    ->condition('roles', 'administrator')
-    ->range(0, $number_of_records)
-    ->execute();
   $num_operations = count($ids);
   $operations = [];
-
   // Breakdown your process into small batches(operations).
   // Delete 10 nodes per batch.
   foreach (array_chunk($ids, $batch_size) as $idarray) {
@@ -48,7 +47,7 @@ public function generateBatch(string $number_of_records, string $batch_size, str
     // - The function to call.
     // - An array of arguments to that function.
     $operations[] = [
-      '\Drupal\bulk_batchdelete\BatchService::bulk_batchdelete_op',
+      '\Drupal\bulk_batchdelete\Service\BatchService::bulkBatchdeleteOperation',
       [
         $idarray,
         $batch_name,
@@ -56,11 +55,43 @@ public function generateBatch(string $number_of_records, string $batch_size, str
     ];
   }
   $batch = [
-    'title' => $this->t('Deleting content_editor users from DB @num', ['@num' => $num_operations]),
+    'title' => $this->t('Deleting records from DB @num', ['@num' => $num_operations]),
     'operations' => $operations,
-    'finished' => '\Drupal\bulk_batchdelete\BatchService::bulk_batchdelete_op_finished',
+    'finished' => '\Drupal\bulk_batchdelete\Service\BatchService::bulkBatchdeleteOperationFinished',
   ];
   return $batch;
+}
+
+/**
+ * This is the function that is called on to generate query and return ID's.
+ *
+ * This creates an query results and generate ID's
+ * which we can passed to batchGenerate function to chunk the data
+ * and pass it to batch functions for further processing.
+ *
+ * @param int $number_of_records
+ *   Fetch number of records from entity which needs to delete.
+ * @param Array $dataToGenerateQuery
+ *  Collection of values which help to generate the query and get entity ID's.
+ *
+ */
+function generateQuery(int $number_of_records, array $dataToGenerateQuery) {
+
+  // Get all variables.
+  $entityType = $dataToGenerateQuery['entity_type'];
+  $node_type_list = $dataToGenerateQuery['node_type_list'];
+  $user_status = $dataToGenerateQuery['user_status'];
+  $use_cancellation_method = $dataToGenerateQuery['use_cancellation_method'];
+
+  // Generate Query.
+  $ids = \Drupal::entityQuery($entityType)
+    ->condition('status', $user_status)
+    ->condition('roles', $node_type_list)
+    ->range(0, $number_of_records)
+    ->execute();
+
+    // Return query result.
+  return $ids;
 }
 
 /**
@@ -78,7 +109,7 @@ public function generateBatch(string $number_of_records, string $batch_size, str
  *   Context for operations.
  *
  */
-  function bulk_batchdelete_op(array $idarray, string $batch_name, &$context) {
+  public static function bulkBatchdeleteOperation(array $idarray, string $batch_name, &$context) {
     // Simulate long process by waiting 1/50th of a second.
     $log_file_path = DRUPAL_ROOT . '/' . PublicStream::basePath() . '/bulk_delete/';
     $log_file_name = $batch_name . '_user_deletion.txt';
@@ -119,7 +150,7 @@ public function generateBatch(string $number_of_records, string $batch_size, str
    * @param array $operations
    *   Array of operations.
    */
-  function bulk_batchdelete_op_finished($success, $results, $operations) {
+  public static function bulkBatchdeleteOperationFinished($success, $results, $operations) {
     $messenger = \Drupal::messenger();
     if ($success) {
       $messenger->addMessage(t('@count batch processed.', ['@count' => count($results)]));

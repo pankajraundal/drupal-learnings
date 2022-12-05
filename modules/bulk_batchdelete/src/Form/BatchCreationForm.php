@@ -89,7 +89,7 @@ class BatchCreationForm extends FormBase {
       ),
     ];
 
-    // Add field which will only get diapplyed when selected "User" entity
+    // Add field which will only get displayed when selected "User" entity
     // Show list of bundles which needs to delete.
     // This will get generated from the entity which selected from Entity dropdown.
     $renderedBundle = [];
@@ -100,6 +100,7 @@ class BatchCreationForm extends FormBase {
       '#description' => $this->t('Choose node bundle for which contents need to delete'),
       '#options' => $renderedBundle,
       '#attributes' => ["id" => "bundle_options"],
+      '#validated' => true
     ];
 
     // Filed to give option for user status.
@@ -225,7 +226,7 @@ class BatchCreationForm extends FormBase {
       $form_state->setErrorByName('node_type_list', $this->t('Please select bundle to delete.'));
     }
     // Validate extra fields which will get add if user entity has been selected.
-    if (!empty($entityName)) {
+    if (!empty($entityName) && $entityName == 'user_role') {
       // User status selection.
       $userStatus = $form_state->getValue('user_status');
       if (empty($userStatus)) {
@@ -277,9 +278,29 @@ class BatchCreationForm extends FormBase {
     $batch_size = $form_state->getValues()['batch_size'];
     // Batch name.
     $batch_name = $form_state->getValues()['batch_name'];
+    // entity_list
+    $entity_type = $form['entity_list']['#options'][$form_state->getValue('entity_list')];
+    // node_type_list
+    $node_type_list = $form_state->getValues()['node_type_list'];
+    // user_status
+    $user_status = $form_state->getValues()['user_status'];
+    // use_cancellation_method
+    $use_cancellation_method = $form_state->getValues()['use_cancellation_method'];
+
+    $dataToGenerateQuery = [
+      'entity_type' => $entity_type,
+      'node_type_list' => $node_type_list,
+      'user_status' => $user_status,
+      'use_cancellation_method' => $use_cancellation_method,
+    ];
+
+    // print_r($dataToGenerateQuery);
+    // exit;
+
     // Set the batch, using convenience methods.
     $batch = [];
-    $batch = $this->batchService->generateBatch($number_of_records, $batch_size, $batch_name);
+    $ids = $this->batchService->generateQuery($number_of_records, $dataToGenerateQuery);
+    $batch = $this->batchService->generateBatch($batch_size, $batch_name,  $ids);
     batch_set($batch);
   }
 }
