@@ -1,0 +1,14 @@
+name: 'Lionbridge Content API Translator'
+description: 'Translator that connects the Translation Management Tool module with the Lionbridge Translation Services.'
+core_version_requirement: ^8.8 || ^9
+package: 'Translation Management'
+# version: '8.x-2.21'
+# project: 'lionbridge_translation_provider'
+dependencies:
+  - tmgmt
+type: module
+configure: entity.tmgmt_translator.collection
+# Information added by Drupal.org packaging script on 2022-12-06
+version: '8.x-2.21'
+project: 'lionbridge_translation_provider'
+datestamp: 1670342930
