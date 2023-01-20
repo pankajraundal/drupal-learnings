@@ -27,7 +27,7 @@ use Drupal\tmgmt_contentapi\Swagger\Client\ObjectSerializer;
 use Drupal\tmgmt_contentapi\Plugin\tmgmt_contentapi\Format\Xliff;
 use Drupal\tmgmt_contentapi\Swagger\Client\Model\CreateToken;
 use Drupal\Core\File\FileSystemInterface;
-
+use Drupal\tmgmt_contentapi\JobJourneyLog;
 
 //ini_set('MAX_EXECUTION_TIME', 3600);
 /**
@@ -39,7 +39,7 @@ use Drupal\Core\File\FileSystemInterface;
 /**
  * Import form submit callback.
  */
- function tmgmt_contentapi_import_form_submit(array $form, FormStateInterface $form_state) {
+function tmgmt_contentapi_import_form_submit(array $form, FormStateInterface $form_state) {
   // Ensure we have the file uploaded.
   $job = $form_state->getFormObject()->getEntity(); 
 
@@ -343,15 +343,19 @@ function tmgmt_contentapi_import(JobInterface $job,$filedatastring,$name){
 
 
 function load_drupal_jobs_from_capi_jobs($capiJobs){
+  
+  $jobJourneyLog = new JobJourneyLog();
+  $jobJourneyLog->writeLogToFile('', "capiJobSetStoredData: Inside load_drupal_jobs_from_capi_jobs", [$capiJobs, 'CapiJobsCount' => count($capiJobs)]);
   if(count($capiJobs) == 0)
   {
+    $jobJourneyLog->writeLogToFile('', "capiJobSetStoredData", ['CapiJobsCount' => count($capiJobs)]);
     return $capiJobs;
   }
   
   
   $processedResults = array();
 
-  
+    
     $sub_query2 = \Drupal::database()->select('tmgmt_message', 'c');
     // $sub_query2->addField('c', 'tjid');
     $sub_query2->addExpression("MAX(c.mid)", 'mid');
@@ -386,7 +390,7 @@ function load_drupal_jobs_from_capi_jobs($capiJobs){
 
       $processedResults[$messageInfo['jobId']] = $newField;
     }   
-  
+  $jobJourneyLog->writeLogToFile('', "Processed Results", $processedResults);
 
   
   foreach($processedResults as $value)
@@ -395,6 +399,7 @@ function load_drupal_jobs_from_capi_jobs($capiJobs){
     $loadedData = json_decode($value['data'], true);
     
     if(array_key_exists($loadedData['capiJob']['jobId'], $capiJobs) == false){
+      $jobJourneyLog->writeLogToFile($loadedData['capiJob']['jobId'], "Job Not exist", $capiJobs);
       continue;
     }
     
@@ -403,11 +408,14 @@ function load_drupal_jobs_from_capi_jobs($capiJobs){
     $tmpItem['prevStatus'] = $loadedData['capiJob']['status'];
     $tmpItem['drupalJob'] = Job::load($value['tjid']);
 
-    if($tmpItem['prevStatus'] != $tmpItem['status']){
-      ConentApiHelper::capiJobSetStoredData($tmpItem['drupalJob'], ['jobId'=> $tmpItem['jobId'],'jobStatus' => $tmpItem['status'],'providerId' => $tmpItem['providerId'], 'jobType' => $tmpItem['type']]);
-    }
+    $jobJourneyLog->writeLogToFile($tmpItem['jobId'], "Temp Item", $tmpItem);
 
-    
+    if($tmpItem['prevStatus'] != $tmpItem['status']){
+      $storeArray = ['jobId' => $tmpItem['jobId'], 'jobStatus' => $tmpItem['status'], 'providerId' => $tmpItem['providerId'], 'jobType' => $tmpItem['type']];
+      ConentApiHelper::capiJobSetStoredData($tmpItem['drupalJob'],  $storeArray);
+
+      $jobJourneyLog->writeLogToFile($tmpItem['jobId'], "Previous Status comparision", $storeArray);
+    }
     $capiJobs[$loadedData['capiJob']['jobId']] = $tmpItem;
   }
   for($idx = count($capiJobs); $idx > 0; $idx--){
@@ -415,6 +423,7 @@ function load_drupal_jobs_from_capi_jobs($capiJobs){
       array_splice($capiJobs, $idx - 1, 1);
     }
   }
+  $jobJourneyLog->writeLogToFile('', "Return from load_drupal_jobs_from_capi_jobs", [$capiJobs, 'CapiJobsCount' => count($capiJobs)]);
   return $capiJobs;
 }
 
@@ -481,12 +490,18 @@ function tmgmt_get_ctt_token(TranslatorInterface $translator){
 }
 
 function tmgmt_contentapi_scan_updated_jobs($capiToken, $cttToken, $filterJobId = null){
+  
+  $jobJourneyLog = new JobJourneyLog();
+
   $capiJobs = array();
   $jobsCtt = array();
   $jobs = array();
   $statusapi = new StatusUpdateApi();
   $capiv1jobs = array();
   $capiv2jobs = $statusapi->statusupdatesGet($capiToken);
+   
+  $jobJourneyLog->writeLogToFile('', "PAN - 5 Inside tmgmt_contentapi_scan_updated_jobs capiv2jobs- In content API function", (array) $capiv2jobs);
+
   if($cttToken != '')
   {
     $capiv1jobs = $statusapi->jobsJobIdStatusupdatesGet($cttToken);
@@ -526,6 +541,9 @@ function tmgmt_contentapi_scan_updated_jobs($capiToken, $cttToken, $filterJobId 
     }
   }
   foreach($capiv2jobs as $value){
+    
+    $jobJourneyLog->writeLogToFile('', "PAN - 6 Inside for loop of tmgmt_contentapi_scan_updated_jobs", (array) $value);
+
     if($filterJobId != null && $filterJobId != $value['job_id']){
       continue;
     }
@@ -542,22 +560,41 @@ function tmgmt_contentapi_scan_updated_jobs($capiToken, $cttToken, $filterJobId 
       $jobs[$value['job_id']][] = $jobInfo;
       continue;
     }
+   
+
     if($jobs[$value['job_id']][0]['updateTime'] < $jobInfo['updateTime']){
+      $jobJourneyLog->writeLogToFile($value['job_id'], "PAN - 7 Inside for loop of tmgmt_contentapi_scan_updated_jobs Unshift <br/> value: %value <br/> jobs_update_time: %jobs_update_time <br/> jobs_info_update_time", 
+      [
+        'job_id' => $value['job_id'],
+        'jobs_update_time' =>$jobs[$value['job_id']][0]['updateTime'],
+        'jobs_info_update_time' => $jobInfo['updateTime'],
+      ]
+      );
       array_unshift($jobs[$value['job_id']] , $jobInfo);
     }else{
+      $jobJourneyLog->writeLogToFile($jobs[$value['job_id']], "PAN - 7 Inside tmgmt_contentapi_scan_updated_jobs capiv2jobs- In content API function:", $jobInfo);
       $jobs[$value['job_id']][] = $jobInfo;
     }
   }
   foreach($jobs as $value)
   {
+    $jobJourneyLog->writeLogToFile('', "PAN - 8 Inside for loop of tmgmt_contentapi_scan_updated_jobs:", $value);
+
     for($idx=0;$idx < count($value); $idx++){
       if($idx == 0){
+        \Drupal::logger('TMGMT_CONTENTAPI')->notice('Exiting loop');
         $capiJobs[$value[$idx]['jobId']] = $value[$idx];  
         continue;
       }
       $acknowledge = $statusapi->statusupdatesUpdateIdAcknowledgePut($capiToken,$value[$idx]['updateId']);
+      
+      $jobJourneyLog->writeLogToFile($jobs[$value['job_id']], "Acknowledge Job:", [
+        'updateId' => $value[$idx]['updateId'],
+        'acknowledge' => $acknowledge,
+      ]);
     }
   }
+  $jobJourneyLog->writeLogToFile('', "Final return from tmgmt_contentapi_scan_updated_jobs ", [$capiJobs, 'Count' =>  count($capiJobs)]);
   return  load_drupal_jobs_from_capi_jobs($capiJobs);
 }
 function tmgmt_contentapi_fix_older_jobs($cttToken){
@@ -598,7 +635,7 @@ function tmgmt_contentapi_fix_older_jobs($cttToken){
         $projectInfo = $jobapi->jobsJobIdGetCtt($cttToken, $capijobid, "fullWithStats");
         $provider = $projectInfo->getProviderId();
         $jobstatus = 'IMPORTED';//$projectInfo->getStatusCode()->getStatusCode();
-        \Drupal\tmgmt_contentapi\Util\ConentApiHelper::capiJobSetStoredData($job, ['jobId' => $capijobid ,'jobStatus' => $jobstatus, 'providerId' => $provider, 'jobType' => $capiVersion]);
+        ConentApiHelper::capiJobSetStoredData($job, ['jobId' => $capijobid ,'jobStatus' => $jobstatus, 'providerId' => $provider, 'jobType' => $capiVersion]);
       }
       catch(Exception $ex){
 
@@ -607,11 +644,27 @@ function tmgmt_contentapi_fix_older_jobs($cttToken){
   }
 }
 function tmgmt_contentapi_downlaod_data_from_contentapi(TranslatorInterface $translator){
+  // TODO: not the correct way to create a multiple objects of one class
+  // Declare log object
+  $jobJourneyLog = new JobJourneyLog();
+  
+  $jobJourneyLog->writeLogToFile('', "PAN - 4 - tmgmt_contentapi_downlaod_data_from_contentapi - In content API function",['translatorLable' => $translator->label()]);
+
   $capiToken = tmgmt_get_capi_token($translator);
   $cttToken = tmgmt_get_ctt_token($translator);
   tmgmt_contentapi_fix_older_jobs($cttToken);
   $capiJobs = tmgmt_contentapi_scan_updated_jobs($capiToken, $cttToken);
+
+  \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 10 From content API function capiToken: %capiToken <br/> cttToken: %cttToken <br/> capiJobs: %capiJobs', [
+    '%capiToken' => $capiToken,
+    '%cttToken' => $cttToken,
+    '%capiJobs' => json_decode(json_encode($capiJobs)),
+  ]);
+
   if(count($capiJobs) > 0 ){
+    \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 11 From content API function totalCapiJobs: %totalCapiJobs', [
+      '%totalCapiJobs' => count($capiJobs),
+    ]);
     tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, $capiJobs, $translator->isAutoAccept()); 
   }
 }
@@ -691,10 +744,15 @@ function tmgmt_contentapi_downlaod_data_from_contentapi_by_job($capiToken, $cttT
 }
 
 function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJobs, $autoaccept){
+  $jobJourneyLog = new JobJourneyLog();
+  \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 12 in download for job function');
   $statusapi = new StatusUpdateApi();
   $capiToDeliver = array();
   $capiCancelled = array();
   $capiToIgnore = array();
+  \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 13 from download for job function capiJobs: %capiJobs', [
+    '%capiJobs' => $capiJobs,
+  ]);
   foreach($capiJobs as $value)
   {
     //IF THE JOB IS NOT ACTIVE
@@ -704,8 +762,8 @@ function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJo
     }
     switch($value['status']){
         case "REVIEW_TRANSLATION":
-        case "TRANSLATION_APPROVED":
-          $capiToDeliver[$value['jobId']] = $value;
+          case "TRANSLATION_APPROVED":
+            $capiToDeliver[$value['jobId']] = $value;
           break;
         case "CANCELLED":
           $capiCancelled[$value['jobId']] = $value;
@@ -714,6 +772,11 @@ function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJo
           $capiToIgnore[$value['jobId']] = $value;
     }
   }
+  $jobJourneyLog->writeLogToFile('', "Job Count:", [
+    'capiCancelled' => count($capiCancelled),
+    'capiToDeliver' => count($capiToDeliver),
+    'capiToIgnore' => count($capiToIgnore)
+  ]);
   foreach($capiToIgnore as $value)
   {
     if($value['updateId'] != '')
@@ -725,6 +788,10 @@ function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJo
       else
       {
         $acknowledge = $statusapi->statusupdatesUpdateIdAcknowledgePut($capiToken,$value['updateId']);
+        $jobJourneyLog->writeLogToFile('', "Acknowledge Job: capiToIgnore : ", [
+          'updateId' => $value['updateId'],
+          'acknowledge' => $acknowledge,
+        ]);
       }
     }
   }
@@ -741,6 +808,10 @@ function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJo
       else
       {
         $acknowledge = $statusapi->statusupdatesUpdateIdAcknowledgePut($capiToken,$value['updateId']);
+        $jobJourneyLog->writeLogToFile('', "Acknowledge Job: capiCancelled :", [
+          'updateId' => $value['updateId'],
+          'acknowledge' => $acknowledge,
+        ]);
       }
     }
     
@@ -761,6 +832,10 @@ function tmgmt_contentapi_downlaod_for_jobs($capiToken, $cttToken, array $capiJo
         else
         {
           $acknowledge = $statusapi->statusupdatesUpdateIdAcknowledgePut($capiToken,$value['updateId']);
+          $jobJourneyLog->writeLogToFile('', "Acknowledge Job: capiToDeliver :", [
+            'updateId' => $value['updateId'],
+            'acknowledge' => $acknowledge,
+          ]);
         }
       }
       catch (Exception $exception){
@@ -833,24 +908,34 @@ function tmgtm_contentapi_file_download($uri) {
 
 
 function tmgmt_contentapi_cron() {
+  $jobJourneyLog = new JobJourneyLog();
+  $jobJourneyLog->writeLogToFile('', "PAN - 1 Cron started:", []);
   // Get all translators.
   $translators = \Drupal::entityTypeManager()->getStorage('tmgmt_translator')->loadByProperties(['plugin' => 'contentapi']);
-
+  $jobJourneyLog->writeLogToFile('', "Translator", (array) $translators);
   if (!$translators) {
+    $jobJourneyLog->writeLogToFile('', "No translators found", (array) $translators);
     return;
   }
 
 
   foreach ($translators as $translator) {
+    \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 2 Checking translation for  %translator', [
+      '%translator' => $translator->label(),
+    ]);
+    
+    $jobJourneyLog->writeLogToFile('', "PAN - 2 Translator for",['translatorLable' => $translator->label()]);
     // Receive all processed translations.
     //module_load_include('inc', 'tmgmt_fwconnector', 'tmgmt_fwconnector.cron');
     $config = $translator->getSetting('cron-settings');
+    \Drupal::logger('TMGMT_CONTENTAPI')->notice('PAN - 3 translator configuration status  %config', [
+      '%config' => $config['status'],
+    ]);
+    $jobJourneyLog->writeLogToFile('', "Translator configuration status",['ConfigStatus' => $config['status']]);
 
     // Make sure cron is enabled for this translator.
     if (!$config['status']) {
-      \Drupal::logger('TMGMT_CONTENTAPI')->notice('Cron disabled for translator %translator', [
-        '%translator' => $translator->label(),
-      ]);
+      $jobJourneyLog->writeLogToFile('', "Cron disabled for translator",[]);
       continue;
     }
     tmgmt_contentapi_downlaod_data_from_contentapi($translator);
