@@ -3,11 +3,13 @@ namespace Drupal\bulk_batchdelete\Service;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\user\Entity\User;
 
 /**
  * Class ProcessEntity.
  */
-class ProcessEntity extends EntityTypeManager {
+class ProcessEntity extends EntityTypeManager
+{
 
   /**
    * The entity type manager.
@@ -22,20 +24,21 @@ class ProcessEntity extends EntityTypeManager {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entityTypeManager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager) {
+  public function __construct(EntityTypeManagerInterface $entityTypeManager)
+  {
     $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
    * Function to get list of all entities.
    */
-  public function listEntity() {
+  public function listEntity()
+  {
     $entity_types = $this->entityTypeManager->getDefinitions('content');
     $result = [];
-    //print_r($entity_types); exit;
     foreach ($entity_types as $name => $entity_type) {
       $group = $entity_type->getGroupLabel()->render();
-      if($group == 'Content') {
+      if ($group == 'Content') {
         $bundleType = $entity_type->getBundleEntityType();
         $result[$bundleType] = $name;
       }
@@ -48,7 +51,8 @@ class ProcessEntity extends EntityTypeManager {
    * For now we have consider limited entities.
    * We have scope for enhancement by adding more entities.
    */
-  public function listLimitedEntity() {
+  public function listLimitedEntity()
+  {
     // Current support entity, This can be increased in future release.
     $supportEntities = [
       'user_role' => 'user',
@@ -68,11 +72,12 @@ class ProcessEntity extends EntityTypeManager {
    * @return array
    * 
    */
-  public function getBundles(string $entity_type) {
+  public function getBundles(string $entity_type)
+  {
     $types = [];
     $entities = $this->entityTypeManager->getStorage($entity_type)->loadMultiple();
     foreach ($entities as $entitie) {
-      if ($entitie->id() !=  'anonymous') {
+      if ($entitie->id() != 'anonymous') {
         $types[$entitie->id()] = $entitie->label();
       }
     }
@@ -82,7 +87,8 @@ class ProcessEntity extends EntityTypeManager {
   /**
    * Function to get list of all user status.
    */
-  public function getListOfUserStatus() {
+  public function getListOfUserStatus()
+  {
     // Get diaplyed only when "User" entity has been selected
     $userStatus = [
       'all' => 'Both Blocked and Active',
@@ -95,8 +101,9 @@ class ProcessEntity extends EntityTypeManager {
   /**
    * Function to select option about Cancellation method.
    */
-  public function getListOfCancelMethod() {
-  // Get diaplyed only when "User" entity has been selected
+  public function getListOfCancelMethod()
+  {
+    // Get diaplyed only when "User" entity has been selected
     $userStatus = [
       'user_cancel_block' => 'Disable the account and keep its content.',
       'user_cancel_block_unpublish' => 'Disable the account and unpublish its content.',
@@ -106,4 +113,75 @@ class ProcessEntity extends EntityTypeManager {
     return $userStatus;
   }
 
+  /**
+   * Function to get tablename mapped against entity.
+   */
+  public function getEntityTableNameMapping()
+  {
+    // Entity name is not match with the table name for.
+    // So we need to matach that using below array.
+    $entityTableNameMapping = [
+      'user' => 'users',
+      'node' => 'node',
+      'taxonomy_term' => 'taxonomy_term',
+    ];
+    return $entityTableNameMapping;
+  }
+
+  /**
+ * This is the function that is called on each operation in batch.
+ *
+ * This deletes an entity from system
+ * 
+ * @param string $entityType
+ *   Entit type which needs to delete.
+ * @param string $id
+ *   id of an entity which needs to delete
+ *
+ */
+  public function deleteEntity(string $entityType, int $id)
+  {
+    switch ($entityType) {
+      case 'user':
+        $this->deleteUserEntity($id);
+        break;
+      case 'node':
+        $this->deleteNodeEntity($id);
+        break;
+      case 'taxonomy_term':
+        $this->deleteTaxonomyEntity($id);
+        break;
+    }
+  }
+
+  /**
+   * Function to get tablename mapped against entity.
+   */
+  public function deleteUserEntity($userId)
+  {
+    user_cancel([], $id, 'user_cancel_reassign');
+    $account = User::load($id);
+    $deleteAccountConfirmation = $account->delete();
+    return $deleteAccountConfirmation;
+  }
+
+  /**
+   * Function to get tablename mapped against entity.
+   */
+  public function deleteNodeEntity($nodeId)
+  {
+    user_cancel([], $id, 'user_cancel_reassign');
+    $account = User::load($id);
+    $account->delete();
+  }
+
+  /**
+   * Function to get tablename mapped against entity.
+   */
+  public function deleteTaxonomyEntity($vocabularyId)
+  {
+    user_cancel([], $id, 'user_cancel_reassign');
+    $account = User::load($id);
+    $account->delete();
+  }
 }

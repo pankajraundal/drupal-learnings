@@ -49,8 +49,8 @@ class BatchCreationForm extends FormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('logger.factory'),
-      $container->get('process_entity'),
-      $container->get('batch_service'),
+      $container->get('bulk_batchdelete.process_entity'),
+      $container->get('bulk_batchdelete.batch_service'),
     );
   }
 
@@ -204,7 +204,7 @@ class BatchCreationForm extends FormBase {
     // Check if user entity has been selected for a entity field.
     // If option user is selected then only disaply user status option.
     if ($entityValue == 'user_role') {
-      
+    
       $response->addCommand(new ReplaceCommand('#user_status_options', $form['user_status']));
       $response->addCommand(new ReplaceCommand('#user_cancellation_options', $form['use_cancellation_method']));
     }
@@ -286,7 +286,10 @@ class BatchCreationForm extends FormBase {
     $user_status = $form_state->getValues()['user_status'];
     // use_cancellation_method
     $use_cancellation_method = $form_state->getValues()['use_cancellation_method'];
-
+    // Get table name against entity.
+    // Entity name is not match with the table name for.
+    // So we need to matach that using below array.
+    // $entityTableNameMapping = $this->processEntity->getEntityTableNameMapping();
     $dataToGenerateQuery = [
       'entity_type' => $entity_type,
       'node_type_list' => $node_type_list,
@@ -300,7 +303,7 @@ class BatchCreationForm extends FormBase {
     // Set the batch, using convenience methods.
     $batch = [];
     $ids = $this->batchService->generateQuery($number_of_records, $dataToGenerateQuery);
-    $batch = $this->batchService->generateBatch($batch_size, $batch_name,  $ids);
-    batch_set($batch);
+    $batch = $this->batchService->generateBatch($batch_size, $batch_name, $ids, $entity_type);
+    batch_set($batch); 
   }
 }

@@ -4,12 +4,27 @@ namespace Drupal\bulk_batchdelete\Service;
 use Drupal\user\Entity\User;
 use Drupal\Core\StreamWrapper\PublicStream;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use \Drupal\bulk_batchdelete\Service\ProcessEntity;
+use Drupal\Core\Entity\EntityTypeManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Class BatchService.
  */
 class BatchService {
-
   use StringTranslationTrait;
+
+/**
+* The process entity object.
+*
+* @var \Drupal\bulk_batchdelete\Service\ProcessEntity;
+*/
+  public $processEntity;
+
+  public function __construct(ProcessEntity $processEntity)
+  {
+    $this->processEntity = $processEntity;
+  }
+
 /**
  * File to process bulk delete operations.
  *
@@ -23,18 +38,62 @@ class BatchService {
  */
 
 /**
- * This function will process the query and generate Batch .
+ * This is the function that is called on to generate query and return ID's.
+ *
+ * This creates an query results and generate ID's
+ * which we can passed to batchGenerate function to chunk the data
+ * and pass it to batch functions for further processing.
  *
  * @param int $number_of_records
  *   Fetch number of records from entity which needs to delete.
+ * @param array $dataToGenerateQuery
+ *  Collection of values which help to generate the query and get entity ID's.
+ *
+ * @return array
+ */
+function generateQuery(int $number_of_records, array $dataToGenerateQuery) {
+
+  // Get all variables.
+  $entityType = $dataToGenerateQuery['entity_type'];
+  $node_type_list = $dataToGenerateQuery['node_type_list'];
+  $user_status = $dataToGenerateQuery['user_status'];
+  $use_cancellation_method = $dataToGenerateQuery['use_cancellation_method'];
+
+  // Generate Query.
+  $query = \Drupal::entityQuery($entityType);
+  $andGroup = $query->andConditionGroup();
+  // Entity: User: Add conditions to query on basis of user
+  if($entityType == 'user') {
+    if($user_status != '' && $user_status != 'all') {
+        $andGroup
+          ->condition('status', $user_status);
+    }
+    $andGroup 
+      ->condition('roles', $node_type_list);
+  }
+  // Entity: Node: Add conditions to query on basis of node.
+  // Entity: taxonmy term: Add conditions to query on basis of taxonomy.
+  $ids = $query
+    ->condition($andGroup)
+    ->addTag('debug')
+    ->execute();
+  return $ids;
+}
+
+/**
+ * This function will process the query and generate Batch .
+ *
+
  * @param string $batch_size
  *   Create batches of small size which needs to process at a time.
- * @param object $batch_name
+ * @param string $batch_name
  *   Give name to the batch for logging and identification purpose.
- * @param Array $ids
+ * @param array $ids
  *   Collection of values which needs to process the batch.
+ *  @param string $entityType
+ *   Entity type which needs to selected for further process
  */
-public function generateBatch(string $batch_size, string $batch_name, array $ids) {
+public function generateBatch(string $batch_size, string $batch_name, array $ids, string $entityType) {
 
   // Get all user id on the basis of role.
   // And number of records needs to delete.
@@ -51,6 +110,7 @@ public function generateBatch(string $batch_size, string $batch_name, array $ids
       [
         $idarray,
         $batch_name,
+        $entityType,
       ],
     ];
   }
@@ -63,63 +123,31 @@ public function generateBatch(string $batch_size, string $batch_name, array $ids
 }
 
 /**
- * This is the function that is called on to generate query and return ID's.
- *
- * This creates an query results and generate ID's
- * which we can passed to batchGenerate function to chunk the data
- * and pass it to batch functions for further processing.
- *
- * @param int $number_of_records
- *   Fetch number of records from entity which needs to delete.
- * @param Array $dataToGenerateQuery
- *  Collection of values which help to generate the query and get entity ID's.
- *
- */
-function generateQuery(int $number_of_records, array $dataToGenerateQuery) {
-
-  // Get all variables.
-  $entityType = $dataToGenerateQuery['entity_type'];
-  $node_type_list = $dataToGenerateQuery['node_type_list'];
-  $user_status = $dataToGenerateQuery['user_status'];
-  $use_cancellation_method = $dataToGenerateQuery['use_cancellation_method'];
-
-  // Generate Query.
-  $ids = \Drupal::entityQuery($entityType)
-    ->condition('status', $user_status)
-    ->condition('roles', $node_type_list)
-    ->range(0, $number_of_records)
-    ->execute();
-
-    // Return query result.
-  return $ids;
-}
-
-/**
  * This is the function that is called on each operation in batch.
  *
  * This creates an operations array defining what batch should do, including
  * what it should do when it's finished. In this case, each operation is the
  * same and by chance even has the same $uid to operate on.
  * 
- * @param int $idarray
+ * @param array $idarray
  *   Array of Id to process.
  * @param string $batch_name
+ *   Batch name to create log file for current batch.
+ * @param string $entityType
  *   Batch name to create log file for current batch.
  * @param object $context
  *   Context for operations.
  *
  */
-  public static function bulkBatchdeleteOperation(array $idarray, string $batch_name, &$context) {
+  public static function bulkBatchdeleteOperation(array $idarray, string $batch_name, string $entityType, &$context) {
     // Simulate long process by waiting 1/50th of a second.
     $log_file_path = DRUPAL_ROOT . '/' . PublicStream::basePath() . '/bulk_delete/';
-    $log_file_name = $batch_name . '_user_deletion.txt';
+    $log_file_name = $batch_name . '_' . $entityType . 'deletion.txt';
     $final_file = $log_file_path . $log_file_name;
     // Process each record.
     foreach ($idarray as $id) {
-      // Delete user record.
-      user_cancel([], $id, 'user_cancel_reassign');
-      $account = User::load($id);
-      $account->delete();
+      // Delete a record.
+      $processEntityObj = new ProcessEntity();
       // Get current time to add in log file.
       $current_time = \Drupal::time()->getCurrentTime();
       $log_time = \Drupal::service('date.formatter')->format($current_time, 'custom', 'd-m-Y:H:i:s');
