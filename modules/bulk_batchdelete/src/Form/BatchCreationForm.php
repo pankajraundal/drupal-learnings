@@ -303,7 +303,7 @@ class BatchCreationForm extends FormBase {
     // Set the batch, using convenience methods.
     $batch = [];
     $ids = $this->batchService->generateQuery($number_of_records, $dataToGenerateQuery);
-    $batch = $this->batchService->generateBatch($batch_size, $batch_name, $ids, $entity_type);
+    $batch = $this->batchService->generateBatch($batch_size, $batch_name, $ids, $dataToGenerateQuery);
     batch_set($batch); 
   }
 }
