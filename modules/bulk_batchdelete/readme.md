@@ -13,7 +13,7 @@ Following steps will be helpfull to use this module
     eg. aug24_b1_1000 (aug24(month and day), b1 (today batch number), count)
 
 ### Pros:
-    - For now any user who has can set this cron. Will make it admin restricted in future versions.
+    - For now any user can set this cron, will make it admin restricted in future versions.
     - Easy to kick start the bulk deletion.
     - Progress bar show progress as well as updated numbers.
 
