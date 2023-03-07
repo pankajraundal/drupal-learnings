@@ -1,0 +1,5 @@
+name: twittershake
+type: module
+description: Get user twits and analysis related to twits
+package: Custom
+core_version_requirement: ^9 || ^10

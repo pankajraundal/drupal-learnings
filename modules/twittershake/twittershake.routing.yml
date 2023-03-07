@@ -1,0 +1,7 @@
+twittershake.settings_form:
+  path: '/admin/config/system/twittershake'
+  defaults:
+    _title: 'twittershake settings'
+    _form: 'Drupal\twittershake\Form\SettingsForm'
+  requirements:
+    _permission: 'administer twittershake configuration'
