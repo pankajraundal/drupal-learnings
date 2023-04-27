@@ -1,0 +1,6 @@
+twittershake.settings_form:
+  title: 'twittershake'
+  description: 'Configure twittershake.'
+  parent: system.admin_config_system
+  route_name: twittershake.settings_form
+  weight: 10
