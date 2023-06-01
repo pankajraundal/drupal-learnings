@@ -19,3 +19,9 @@ Launch site and view it in browser
 => ddev launch
 
 View more details here https://www.digitalocean.com/community/tutorials/how-to-develop-a-drupal-9-website-on-your-local-machine-using-docker-and-ddev#option-2-mdash-installing-ddev-on-linux
+
+Some modules which are good to have on your initial setup for development perspective,
+Devel (Generate content and debug code)
+=> ddev composer require 'drupal/devel:^5.0'
+Change Administration menu at the top of your site, get dropdown for each links
+=> ddev composer require 'drupal/admin_toolbar:^3.4'
