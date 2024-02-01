@@ -1,0 +1,15 @@
+<div class="mclaim-tabs">
+  <ul class="tab-links">
+    {% for key, label in tabs %}
+      <li {% if loop.first %}class="active"{% endif %}>
+        <a href="{{ key }}">{{ label }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% for key, label in tabs %}
+    <div id="{{ key }}" class="tab-content {% if loop.first %}active{% endif %}">
+      {{ content }}
+    </div>
+  {% endfor %}
+</div>

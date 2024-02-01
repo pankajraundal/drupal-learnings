@@ -1,0 +1,42 @@
+[
+  {
+    "claims_number": "123456789",
+    "patient_name": "test",
+    "service_type": "medical",
+    "provider_name": "asd",
+    "claims_value": "123",
+    "submission_date": []
+  },
+  {
+    "claims_number": "345671234",
+    "patient_name": "asdasd asdasdasd",
+    "service_type": "medical",
+    "provider_name": "asdasd",
+    "claims_value": "123",
+    "submission_date": []
+  },
+  {
+    "claims_number": "342123456",
+    "patient_name": "test one",
+    "service_type": "dental",
+    "provider_name": "rest",
+    "claims_value": "123",
+    "submission_date": "2024-02-01 17:21:47"
+  },
+  {
+    "claims_number": "098765435",
+    "patient_name": "asd asdasd",
+    "service_type": "dental",
+    "provider_name": "awqweqwe",
+    "claims_value": "123",
+    "submission_date": "2024-02-01 17:21:47"
+  },
+  {
+    "claims_number": "908765423",
+    "patient_name": "asdasd asdasd",
+    "service_type": "medical",
+    "provider_name": "asdasd asdasd",
+    "claims_value": "980",
+    "submission_date": "2024-01-08 17:27:53"
+  }
+]

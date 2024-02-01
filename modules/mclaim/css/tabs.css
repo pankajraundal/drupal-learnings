@@ -1,0 +1,47 @@
+/* tabs.css */
+
+/* Style the tab container */
+.mclaim-tabs {
+  overflow: hidden;
+}
+
+/* Style the tab links */
+.mclaim-tabs .tab-links {
+  list-style-type: none;
+  padding: 10px;
+  margin: 0;
+}
+
+/* Style the tab links */
+.mclaim-tabs .tab-links li {
+  float: left;
+}
+
+/* Style the tab links */
+.mclaim-tabs .tab-links li a {
+  display: block;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #000;
+  background-color: #f2f2f2;
+  border-right: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  border-left: 1px solid #ccc;
+}
+
+/* Change color of tab on hover */
+.mclaim-tabs .tab-links li a:hover {
+  background-color: #ddd;
+}
+
+/* Style the tab content */
+.mclaim-tabs .tab-content {
+  display: none;
+  padding: 20px;
+  border-top: none;
+}
+
+/* Display the default tab content */
+.mclaim-tabs .tab-content.active {
+  display: block;
+}

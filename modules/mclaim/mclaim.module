@@ -1,0 +1,12 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function mclaim_theme() {
+  return [
+    'mclaim_tabs_page' => [
+      'variables' => ['content' => NULL, 'tabs' => NULL],
+    ],
+  ];
+}

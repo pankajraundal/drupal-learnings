@@ -1,0 +1,5 @@
+name: Medical Claims
+type: module
+description: Module to add submit and view claims.
+core_version_requirement: ^9 || ^10
+package: Custom

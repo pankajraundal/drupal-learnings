@@ -1,0 +1,24 @@
+mclaim.view_claims:
+  path: '/mclaim/view-claims'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\ClaimController::viewClaimsPage'
+    _title: 'View Claims'
+  requirements:
+    _permission: 'access content'
+
+mclaim.submit_forms:
+  path: '/mclaim/submit-forms'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\ClaimController::submitFormsPage'
+    _title: 'Submit Forms'
+  requirements:
+    _permission: 'access content'
+
+mclaim.submit_claims:
+  path: '/api/submit-claims'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\SubmitClaimsApiController::submitClaims'
+    _format: 'json'
+  methods: [POST]
+  requirements:
+    _permission: 'access content'
