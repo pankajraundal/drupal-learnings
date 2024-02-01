@@ -1,0 +1,7 @@
+batchimp.form:
+  path: 'bulk/import'
+  defaults:
+    _form: '\Drupal\batchimp\Form\TriggerImport'
+    _title: 'Bulk import via batch processing'
+  requirements:
+    _permission: 'access content'

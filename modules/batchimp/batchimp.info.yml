@@ -1,0 +1,7 @@
+name: 'Test batch'
+description: 'Test batch'
+core_version_requirement: ^9 || ^10
+package: 'Test batch'
+# version: '8.x-2.25'
+# project: 'lionbridge_translation_provider'
+type: module

@@ -1,0 +1,27 @@
+I hope you already install ddev on your machine, If yes then move ahead with following steps,
+Create Directory
+=> mkdir d9test
+=> cd d9test
+Create Ddev config file and set appropriate settings
+=> ddev config --project-type=drupal9 --docroot=web --create-docroot
+Initiate ddev to create environment using various images configured in last step
+=> ddev start
+Get latest version of Drupal and fetch core and othe required modules
+For Drupal 10
+=> ddev composer create "drupal/recommended-project"
+For Drupal 9
+=> ddev composer create "drupal/recommended-project:^9"
+Install drush
+=> ddev composer require "drush/drush"
+Execute site install command to install site.
+=> ddev exec drush site:install --account-name=admin --account-pass=admin
+Launch site and view it in browser
+=> ddev launch
+
+View more details here https://www.digitalocean.com/community/tutorials/how-to-develop-a-drupal-9-website-on-your-local-machine-using-docker-and-ddev#option-2-mdash-installing-ddev-on-linux
+
+Some modules which are good to have on your initial setup for development perspective,
+Devel (Generate content and debug code)
+=> ddev composer require 'drupal/devel:^5.0'
+Change Administration menu at the top of your site, get dropdown for each links
+=> ddev composer require 'drupal/admin_toolbar:^3.4'

@@ -1,0 +1,3 @@
+services:
+  batchimp.process_job:
+    class: Drupal\batchimp\Services\ProcessJob
