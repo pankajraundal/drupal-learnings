@@ -25,6 +25,8 @@ class SubmitClaimsForm extends FormBase {
       '#title' => $this->t('Claims Number'),
       '#required' => TRUE,
       '#attributes' => array('maxlength' => 9), // Restrict to 9 digits
+      // Auto-generate a random 9-digit number
+      '#default_value' => rand(100000000, 999999999)
     );
 
     // Patient Name field - Free text Input should only Alphabets
@@ -59,6 +61,7 @@ class SubmitClaimsForm extends FormBase {
       '#title' => $this->t('Claims Value'),
       '#required' => TRUE,
       '#field_prefix' => '$',
+      '#step' => '0.01',
       '#pattern' => '[0-9]+', // Allow only numeric values
     );
 

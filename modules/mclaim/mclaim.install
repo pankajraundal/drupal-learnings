@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * @file
+ * Install functions for the mclaim module.
+ */
+use Drupal\Core\File\FileSystemInterface;
+
+/**
+ * Implements hook_install().
+ */
+
+function mclaim_install() {
+  // Create directory json_data in the public file system.
+  $directory = 'public://json_data';
+  // Check if directory already exist.
+  if(Drupal::service('file_system')->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY)) {
+    \Drupal::messenger()->addMessage(t('The json_data directory created.'));
+  } else {
+    \Drupal::logger('mclaim')->notice('Failed to create json data');
+    \Drupal::messenger()->addError(t('The json_data directory could not be created, or is not writable.'));
+  }
+  // Create a JSON file for storing patient data.
+  $filename = 'patient-data.json';
+  $file_path = $directory . '/' . $filename;
+  // Create empty json file.
+  if(!file_exists($file_path)) {
+    file_put_contents($file_path, json_encode([]));
+  }
+}

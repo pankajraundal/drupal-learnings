@@ -126,7 +126,7 @@ class ClaimController extends ControllerBase {
 
   /**
    * Submits the forms content.
-   * 
+   *
    * @return array
    *   The sunmit claim form.
    */

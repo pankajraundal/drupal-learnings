@@ -71,7 +71,7 @@ class ClaimFilterForm extends FormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Claims Number'),
       "#size" => "9",
-      '#autocomplete_route_name' => 'mclaim.claims_number', // Replace with the route name for your autocomplete callback
+      '#autocomplete_route_name' => 'mclaim.claims_number', // route name of autocomplete callback
       // Set default value if submitted
       '#default_value' => \Drupal::request()->query->get('claims_number'),
       '#attributes' => ['class' => ['form-field']],
@@ -138,7 +138,7 @@ class ClaimFilterForm extends FormBase {
 
     return $form;
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -163,7 +163,7 @@ class ClaimFilterForm extends FormBase {
         $form_state->setErrorByName('start_date', $this->t('Start Date and End Date should be within the last 18 months.'));
         }
     }
-    
+
   }
 
   /**
@@ -172,7 +172,7 @@ class ClaimFilterForm extends FormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Implement submit logic if needed
   }
-  
+
   /**
    * Submit handler for the filter form.
    */
@@ -183,7 +183,7 @@ class ClaimFilterForm extends FormBase {
     } else {
         $selected_patient_name = $form['row1']['patient_name']['#options'][$form_state->getValue('patient_name')];
     }
-    
+
     //$selected_service_type = $form['service_type']['#options'][$form_state->getValue('service_type')];
     $form_state->setRedirect('mclaim.view_claims', [
         'patient_name' => $selected_patient_name,

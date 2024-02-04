@@ -4,7 +4,7 @@ namespace Drupal\mclaim\Service;
 
 class ClaimsDataService {
 
-  
+
   /**
    * The directory path for JSON data.
    *
@@ -13,7 +13,7 @@ class ClaimsDataService {
    */
   const JSON_DIRECTORY = 'public://json_data';
 
-  
+
   /**
    * The name of the JSON file used for storing patient data.
    */
@@ -71,7 +71,7 @@ class ClaimsDataService {
   public function filterClaimsData($patient_name = '', $claims_number = '', $service_type = '', $start_date = '', $end_date = '') {
     $data = $this->getClaimsData();
     $filtered_data = [];
-    
+
     foreach ($data as $claim) {
       if (
         (empty($patient_name) || $claim['patient_name'] === $patient_name) &&
