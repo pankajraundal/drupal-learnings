@@ -14,18 +14,46 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SubmitClaimsApiController extends ControllerBase {
 
+  /**
+   * @var \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver
+   *   The extension path resolver service.
+   */
   protected $extensionPathResolver;
 
+  /**
+   * @var \Drupal\Core\File\FileSystemInterface $fileSystem
+   *   The file system service.
+   */
   protected $fileSystem;
 
+  /**
+   * @var \Drupal\mclaim\Service\ClaimsDataService
+   *   The claims data service.
+   */
   protected $claimsDataService;
 
+  /**
+   * Constructs a new SubmitClaimsApiController object.
+   *
+   * @param ExtensionPathResolver $extensionPathResolver
+   *   The extension path resolver service.
+   * @param FileSystemInterface $file_system
+   *   The file system service.
+   * @param ClaimsDataService $claimsDataService
+   *   The claims data service.
+   */
   public function __construct(ExtensionPathResolver $extensionPathResolver, FileSystemInterface $file_system, ClaimsDataService $claimsDataService) {
     $this->extensionPathResolver = $extensionPathResolver;
     $this->fileSystem = $file_system;
     $this->claimsDataService = $claimsDataService;
   }
 
+  /**
+   * Creates a new instance of the SubmitClaimsApiController class.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container interface.
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('extension.path.resolver'),
@@ -34,6 +62,15 @@ class SubmitClaimsApiController extends ControllerBase {
     );
   }
 
+  /**
+   * Submits claims.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request object.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The response object.
+   */
   public function submitClaims(Request $request) {
     // Get form data from the request
     $data = json_decode($request->getContent(), TRUE);
@@ -52,13 +89,21 @@ class SubmitClaimsApiController extends ControllerBase {
     }
   }
 
+  /**
+   * Saves the given data to a JSON file.
+   *
+   * @param array $data 
+   *  The data to be saved.
+   * @return string 
+   *  The file path of the saved JSON file.
+   */
   protected function saveToJsonFile(array $data) {
 
-    // Get the module directory path
-    //$module_path = $this->extensionPathResolver->getPath('module', 'mclaim');
+    // Uncomment below code if you want to create directory under same module.
+    // $module_path = $this->extensionPathResolver->getPath('module', 'mclaim');
+    // $directory = $module_path . '/json_data';
 
-    // Define the directory path to store JSON files
-    //$directory = $module_path . '/json_data';
+    // Create directory json_data in the public file system
     $directory = 'public://json_data';
     // Check if the directory already exists
     if (!$this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY)) {
@@ -86,6 +131,12 @@ class SubmitClaimsApiController extends ControllerBase {
     return $file_path;
   }
 
+  /**
+   * Retrieves claims data.
+   *
+   * @param Request $request The request object.
+   * @return Response The response object.
+   */
   public function getClaimsData(Request $request) {
     $values = json_decode($request->getContent(), TRUE);
     // Get all the form values.
@@ -99,6 +150,12 @@ class SubmitClaimsApiController extends ControllerBase {
     return new JsonResponse($claims_data);
   }
 
+  /**
+   * Retrieves the claim numbers from the request.
+   *
+   * @param Request $request The HTTP request object.
+   * @return Response The response containing the claim numbers.
+   */
   public function getClaimNumbers(Request $request) {
     $claims_data = $this->claimsDataService->getAllClaimNumbers();
 
@@ -116,6 +173,15 @@ class SubmitClaimsApiController extends ControllerBase {
     return new JsonResponse($matches);
   }
 
+  /**
+   * Export claims data.
+   *
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request object.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   The response object.
+   */
   public function exportClaimsData(Request $request) {
     // Get all the form values.
     $patient_name = $request->query->get('patient_name');
@@ -135,6 +201,12 @@ class SubmitClaimsApiController extends ControllerBase {
     return $response;
   }
 
+  /**
+   * Generates a CSV file from the given claims data.
+   *
+   * @param array $claims_data The data to be included in the CSV file.
+   * @return string The CSV file content.
+   */
   public function generateCsv($claims_data) {
     // Define the CSV header
     $csv = "Claims Number, Patient Name, Service Type, Provider Name, Claims Value, Submission Date\n";

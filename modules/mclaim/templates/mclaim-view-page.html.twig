@@ -15,24 +15,24 @@
       <table class="claims-table">
         <thead>
           <tr>
-            <th>Claim Number</th>
+            {# <th>Claim Number</th> #}
             <th>Patient Name</th>
             <th>Service Type</th>
             <th>Provider Name</th>
             <th>Claims Value</th>
-            <th>Submission Date</th>
+            {# <th>Submission Date</th> #}
             <!-- Add more headers as needed -->
           </tr>
         </thead>
         <tbody>
           {% for item in content %}
             <tr>
-              <td>{{ item.claims_number }}</td>
+              {# <td>{{ item.claims_number }}</td> #}
               <td>{{ item.patient_name }}</td>
               <td>{{ item.service_type }}</td>
               <td>{{ item.provider_name }}</td>
-              <td>{{ item.claims_value }}</td>
-              <td>{{ item.submission_date }}</td>
+              <td>${{ item.claims_value }}</td>
+              {# <td>{{ item.submission_date }}</td> #}
               <!-- Add more fields as needed -->
             </tr>
           {% endfor %}

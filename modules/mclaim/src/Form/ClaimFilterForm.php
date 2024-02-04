@@ -8,45 +8,76 @@ use Drupal\mclaim\Service\ClaimsDataService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ClaimFilterForm extends FormBase {
+  /**
+   * @var ClaimsDataService
+   *   The claims data service.
+   */
   protected $claimsDataService;
 
+  /**
+   * Constructs a new ClaimFilterForm object.
+   *
+   * @param ClaimsDataService $claimsDataService
+   *   The ClaimsDataService object.
+   */
   public function __construct(ClaimsDataService $claimsDataService) {
      $this->claimsDataService = $claimsDataService;
   }
-
+  /**
+   * Creates an instance of the ClaimFilterForm class.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container interface.
+   *
+   * @return \Drupal\mclaim\Form\ClaimFilterForm
+   *   The ClaimFilterForm instance.
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('mclaim.claims_data_service')
     );
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getFormId() {
     return 'claim_filter_form';
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Add Patient Name dropdown
-    $form['patient_name'] = [
+    $form['row1'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['form-row'],
+      ],
+    ];
+
+    $form['row1']['patient_name'] = [
       '#type' => 'select',
       '#title' => $this->t('Patient Name'),
       // Add options dynamically if needed
       '#options' => ['' => $this->t('Any')] + $this->claimsDataService->getAllPatientNames(),
-      // set the default value if submiteed
+      // set the default value if submitted
       '#default_value' => $key = array_search (\Drupal::request()->query->get('patient_name'), $this->claimsDataService->getAllPatientNames()),
+      '#attributes' => ['class' => ['form-field']],
     ];
 
-    // Add Claims Number autocomplete field
-    $form['claims_number'] = [
+    $form['row1']['claims_number'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Claims Number'),
       "#size" => "9",
       '#autocomplete_route_name' => 'mclaim.claims_number', // Replace with the route name for your autocomplete callback
       // Set default value if submitted
       '#default_value' => \Drupal::request()->query->get('claims_number'),
+      '#attributes' => ['class' => ['form-field']],
     ];
 
-    // Add Service Type dropdown
-    $form['service_type'] = [
+    $form['row1']['service_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Service Type'),
 
@@ -57,45 +88,60 @@ class ClaimFilterForm extends FormBase {
       ],
       // Set default value if submitted
       '#default_value' => \Drupal::request()->query->get('service_type'),
+      '#attributes' => ['class' => ['form-field']],
     ];
 
-    // Add Start Date field
-    $form['start_date'] = [
+    $form['row2'] = [
+      '#type' => 'container',
+      '#attributes' => [
+        'class' => ['form-row'],
+      ],
+    ];
+
+    $form['row2']['start_date'] = [
       '#type' => 'date',
       '#title' => $this->t('Start Date'),
       // Set default value if submitted
       '#default_value' => \Drupal::request()->query->get('start_date'),
+      '#attributes' => ['class' => ['form-field']],
+      // Size of the date field
+      '#size' => 10,
     ];
 
-    // Add End Date field
-    $form['end_date'] = [
+    $form['row2']['end_date'] = [
       '#type' => 'date',
       '#title' => $this->t('End Date'),
       // Set default value if submitted
-      '#default_value' => \Drupal::request()->query->get('end_date'),    
+      '#default_value' => \Drupal::request()->query->get('end_date'),
+      '#attributes' => ['class' => ['form-field']],
+      '#size' => 10,
     ];
 
-    // Add submit button
-    $form['filter'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Search'),
-        '#submit' => ['::filterFormSubmit'],
-        '#attributes' => ['class' => ['button']],
-      ];
+    $form['actions'] = [
+      '#type' => 'actions',
+    ];
 
-    // Provide search result to export as CSV
-    // Add export button
-    $form['export'] = [
-        '#type' => 'submit',
-        '#value' => $this->t('Export to CSV'),
-        '#submit' => ['::exportFormSubmit'],
-        '#attributes' => ['class' => ['button']],
-      ];
+    $form['actions']['filter'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Search'),
+      '#submit' => ['::filterFormSubmit'],
+      '#attributes' => ['class' => ['button']],
+    ];
+
+    $form['actions']['export'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Export to CSV'),
+      '#submit' => ['::exportFormSubmit'],
+      '#attributes' => ['class' => ['button']],
+    ];
 
 
     return $form;
   }
-
+  
+  /**
+   * {@inheritdoc}
+   */
   public function validateForm(&$form, FormStateInterface $form_state) {
     // Validate Claims Number field
     $claims_number = $form_state->getValue('claims_number');
@@ -120,16 +166,22 @@ class ClaimFilterForm extends FormBase {
     
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     // Implement submit logic if needed
   }
   
+  /**
+   * Submit handler for the filter form.
+   */
   public function filterFormSubmit(array &$form, FormStateInterface $form_state) {
     // Submit all values to the controller method "claimFilterForm" for further processing.
     if($form_state->getValue('patient_name') == '') {
         $selected_patient_name = '';
     } else {
-        $selected_patient_name = $form['patient_name']['#options'][$form_state->getValue('patient_name')];
+        $selected_patient_name = $form['row1']['patient_name']['#options'][$form_state->getValue('patient_name')];
     }
     
     //$selected_service_type = $form['service_type']['#options'][$form_state->getValue('service_type')];
@@ -144,6 +196,9 @@ class ClaimFilterForm extends FormBase {
 
   }
 
+  /**
+   * Submit handler for the export form.
+   */
   public function exportFormSubmit(array &$form, FormStateInterface $form_state) {
     // Submit all values to the controller method "claimFilterForm" for further processing.
     if($form_state->getValue('patient_name') == '') {
@@ -151,8 +206,7 @@ class ClaimFilterForm extends FormBase {
     } else {
         $selected_patient_name = $form['patient_name']['#options'][$form_state->getValue('patient_name')];
     }
-    
-    //$selected_service_type = $form['service_type']['#options'][$form_state->getValue('service_type')];
+
     $form_state->setRedirect('mclaim.export_claims_data', [
         'patient_name' => $selected_patient_name,
         'claims_number' => $form_state->getValue('claims_number'),

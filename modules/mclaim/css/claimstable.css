@@ -1,5 +1,5 @@
 /* CSS styles for the table */
-.claims-table {
+ .claims-table {
     width: 100%;
     border-collapse: collapse;
   }
@@ -16,3 +16,46 @@
     background-color: #f9f9f9;
   }
   
+  /* Css to arrange form fields in two rows */
+  /* Fields under claim filter form should be left aligned */
+
+  .claim-filter-form {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .form-row > div {
+    flex: 1;
+    margin: 10px;
+    align-content:flex-start;
+  }
+  .form-row > div > label {
+    display: block;
+  }
+  .form-row > div > input {
+    width: 100%;
+  }
+  .form-row > div > select {
+    width: 100%;
+  }
+  .form-row > div > textarea {
+    width: 100%;
+  }
+  .form-row > div > button {
+    width: 100%;
+  }
+  .form-row > div > input[type="submit"] {
+    width: auto;
+  }
+ 
+  .claim-filter-form .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-block: var(--sp0-90);
+    margin-top: 46px;
+  }

@@ -1,3 +1,4 @@
+// Description: This file is used to activate the tabs in the mclaim module.
 (function ($) {
   $(document).ready(function () {
     // Activate tabs

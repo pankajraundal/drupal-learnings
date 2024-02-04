@@ -10,23 +10,51 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ClaimController extends ControllerBase {
 
+  /**
+   * @var \Drupal\Core\Http\ClientFactory
+   *   The HTTP client factory.
+   */
   protected $httpClientFactory;
 
+  /**
+   * The tabs array.
+   *
+   * @var array
+   */
   protected $tabs = [
     '/mclaim/view-claims' => 'View Claims',
     '/mclaim/submit-forms' => 'Submit Forms',
   ];
 
+  /**
+   * ClaimController constructor.
+   *
+   * @param ClientFactory $httpClientFactory The HTTP client factory.
+   */
   public function __construct(ClientFactory $httpClientFactory) {
     $this->httpClientFactory = $httpClientFactory;
   }
 
+  /**
+   * Creates a new instance of the ClaimController class.
+   *
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   *   The container interface.
+   *
+   * @return \Drupal\mclaim\Controller\ClaimController
+   *   The ClaimController instance.
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('http_client_factory')
     );
   }
 
+  /**
+   * Displays the view claims page.
+   *
+   * @return array
+   */
   public function viewClaimsPage() {
     return [
       '#theme' => 'mclaim_view_page',
@@ -42,6 +70,11 @@ class ClaimController extends ControllerBase {
     ];
   }
 
+  /**
+   * Page to submit the claims.
+   *
+   * @return array
+   */
   public function submitFormsPage() {
     return [
       '#theme' => 'mclaim_submit_form',
@@ -53,10 +86,22 @@ class ClaimController extends ControllerBase {
     ];
   }
 
+  /**
+   * Generates the claim filter form.
+   *
+   * @return array
+   *   The claim filter form.
+   */
   protected function claimFilterForm() {
     return $form =  $this->formBuilder()->getForm(ClaimFilterForm::class);
   }
 
+  /**
+   * Retrieves and displays the claims content.
+   *
+   * @return array
+   *   The response array containing the claims content.
+   */
   protected function viewClaimsContent() {
     // Access all values from the query string.
     $values = \Drupal::request()->query->all();
@@ -79,9 +124,14 @@ class ClaimController extends ControllerBase {
     return $data;
   }
 
+  /**
+   * Submits the forms content.
+   * 
+   * @return array
+   *   The sunmit claim form.
+   */
   protected function submitFormsContent() {
-    $form = $this->formBuilder()->getForm(SubmitClaimsForm::class);
-    return $form;
+    return $form = $this->formBuilder()->getForm(SubmitClaimsForm::class);
   }
 
 }
