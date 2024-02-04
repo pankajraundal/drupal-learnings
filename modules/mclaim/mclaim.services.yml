@@ -1,0 +1,3 @@
+services:
+  mclaim.claims_data_service:
+    class: Drupal\mclaim\Service\ClaimsDataService

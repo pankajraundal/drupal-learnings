@@ -1,0 +1,18 @@
+/* CSS styles for the table */
+.claims-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .claims-table th, .claims-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  .claims-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+  }
+  .claims-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  

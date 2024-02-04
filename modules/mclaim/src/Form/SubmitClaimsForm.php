@@ -137,18 +137,18 @@ class SubmitClaimsForm extends FormBase {
     ];
 
     // Send form data to the custom REST endpoint
-    $response = \Drupal::httpClient()->post('https://d9venila.ddev.site/api/submit-claims', [
-      'json' => $data,
-      'headers' => [
-        'Content-Type' => 'application/json',
-      ],
-    ]);
-
-    // Check response status
-    if ($response->getStatusCode() == 200) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+    $url = $protocol . $_SERVER['HTTP_HOST'] . '/api/submit-claims';
+    try {
+      $response = \Drupal::httpClient()->post($url, [
+        'json' => $data,
+        'headers' => [
+          'Content-Type' => 'application/json',
+        ],
+      ]);
       \Drupal::messenger()->addStatus(t('@claim_number submitted successfully.', ['@claim_number' => $form_state->getValue('claims_number')]));
     }
-    else {
+    catch (\Exception $e) {
       \Drupal::messenger()->addError(t('Failed to submit form data. Please try again later.'));
     }
   }

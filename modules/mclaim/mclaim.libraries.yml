@@ -3,6 +3,7 @@ tabs:
   css:
     theme:
       css/tabs.css: {}
+      css/claimstable.css: {}
   js:
     js/tabs.js: {}
   dependencies:

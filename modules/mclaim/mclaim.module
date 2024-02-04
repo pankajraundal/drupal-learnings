@@ -5,7 +5,10 @@
  */
 function mclaim_theme() {
   return [
-    'mclaim_tabs_page' => [
+    'mclaim_view_page' => [
+      'variables' => ['content' => NULL, 'tabs' => NULL, 'form' => NULL],
+    ],
+    'mclaim_submit_form' => [
       'variables' => ['content' => NULL, 'tabs' => NULL],
     ],
   ];

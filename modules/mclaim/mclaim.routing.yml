@@ -22,3 +22,30 @@ mclaim.submit_claims:
   methods: [POST]
   requirements:
     _permission: 'access content'
+
+mclaim.claims_data:
+  path: '/api/get-claims'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\SubmitClaimsApiController::getClaimsData'
+    _title: 'Claims Data API'
+  methods: ['POST']
+  requirements:
+    _permission: 'access content'
+
+mclaim.claims_number:
+  path: '/api/get-claims-by-number'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\SubmitClaimsApiController::getClaimNumbers'
+    _title: 'Get Claims Number'
+    _format: json
+  requirements:
+    _access: 'TRUE'
+
+mclaim.export_claims_data:
+  path: '/mclaim/export-claims'
+  defaults:
+    _controller: '\Drupal\mclaim\Controller\SubmitClaimsApiController::exportClaimsData'
+    _title: 'Export Claims Data API'
+    _format: json
+  requirements:
+    _permission: 'access content'
